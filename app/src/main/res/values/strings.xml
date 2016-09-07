@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="detail_activity">Details</string>
+    <string name="settings_activity">Settings</string>
+    <string name="title_category">Category</string>
+    <string name="pref_key_category">category</string>
+    <string name="settings_title">Settings</string>
+    <string name="pref_category_default_value">Popular Movies</string>
+    <string name="release_title">Release Date</string>
+
+
+    <string-array name="pref_category_array">
+        <item>movie/popular</item>
+        <item>movie/top_rated</item>
+    </string-array>
+
+    <string-array name="pref_category_label">
+        <item>Popular Movies</item>
+        <item>Top Rated Movies</item>
+    </string-array>
+</resources>
