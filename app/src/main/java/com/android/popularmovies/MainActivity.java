@@ -1,5 +1,6 @@
 package com.android.popularmovies;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -11,6 +12,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.GridView;
 import android.widget.Toast;
+
+import com.android.popularmovies.Adapters.MovieAdapter;
+import com.android.popularmovies.Models.Constants;
+import com.android.popularmovies.Models.Model;
+import com.android.popularmovies.Utils.NetworkUtility;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,11 +41,13 @@ public class MainActivity extends AppCompatActivity {
     BufferedReader reader = null;
 
     // Will contain the raw JSON response as a string.
-    String posterJsonStr = null;
+    String movieJsonStr = null;
 
     String Category = null;
 
     private List<Model> mMovieArrayList = null;
+
+    ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,17 +65,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart(){
         super.onStart();
-        if (NetworkUtility.isOnline(this)){
+        if(NetworkUtility.isOnline(this)){
             updateMovies();
         } else {
             Toast.makeText(MainActivity.this,"Please Enable Internet Services",Toast.LENGTH_SHORT).show();
         }
-
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
+        if (id == R.id.action_favorite){
+           Intent intent = new Intent(MainActivity.this,FavoriteActivity.class);
+            startActivity(intent);
+            return true;
+        }
 
         if (id == R.id.action_settings){
             Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
@@ -83,13 +97,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute(){
+            mProgressDialog = new ProgressDialog(MainActivity.this);
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            String categoryType = preferences.getString(getString(R.string.pref_key_category),Constants.POPULARITY_KEY);
+            String categoryType = preferences.getString(getString(R.string.pref_key_category) ,getString(R.string.pref_category_default_value));
             if(categoryType.equals(Constants.TOP_RATED_KEY)){
                 Category = Constants.TOP_RATED_KEY;
+                mProgressDialog.setTitle("Top Rated Movies");
             } else if (categoryType.equals(Constants.POPULARITY_KEY)){
                 Category = Constants.POPULARITY_KEY;
+                mProgressDialog.setTitle("Popular Movies");
+
             }
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setIndeterminate(false);
+            mProgressDialog.show();
         }
 
         @Override
@@ -127,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     // Stream was empty.  No point in parsing.
                     return null;
                 }
-                posterJsonStr = buffer.toString();
+                movieJsonStr = buffer.toString();
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
@@ -147,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                return getWeatherDataFromJson(posterJsonStr);
+                return getMovieDataFromJson(movieJsonStr);
             } catch (JSONException e) {
                 Log.d(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
@@ -163,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
 
                 GridView gridView = (GridView) findViewById(R.id.grid_view);
                 gridView.setAdapter(movieAdapter);
+
+                mProgressDialog.dismiss();
             }
         }
 
@@ -174,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private String[] getWeatherDataFromJson(String posterJsonStr)
+    private String[] getMovieDataFromJson(String movieJsonStr)
             throws JSONException {
 
         // These are the names of the JSON objects that need to be extracted.
@@ -184,8 +207,9 @@ public class MainActivity extends AppCompatActivity {
         final String MOVIE_TITLE = "original_title";
         final String MOVIE_OVERVIEW = "overview";
         final String MOVIE_RELEASE = "release_date";
+        final String MOVIE_ID = "id";
 
-        JSONObject posterJson = new JSONObject(posterJsonStr);
+        JSONObject posterJson = new JSONObject(movieJsonStr);
         JSONArray movieArray = posterJson.getJSONArray(RESULTS);
 
         String[] resultStrs = new String[movieArray.length()];
@@ -200,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
             model.setPlot(poster.getString(MOVIE_OVERVIEW));
             model.setRating(poster.getDouble(RATING_COUNT));
             model.setRelease(poster.getString(MOVIE_RELEASE));
+            model.setId(poster.getString(MOVIE_ID));
 
             mMovieArrayList.add(model);
 

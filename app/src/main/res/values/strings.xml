@@ -5,8 +5,14 @@
     <string name="title_category">Category</string>
     <string name="pref_key_category">category</string>
     <string name="settings_title">Settings</string>
-    <string name="pref_category_default_value">Popular Movies</string>
-    <string name="release_title">Release Date</string>
+    <string name="pref_category_default_value">movie/popular</string>
+    <string name="release_title">Release Date: </string>
+    <string name="favorite_activity">Favorite Movies</string>
+    <string name="trailers_title">Watch Trailers:</string>
+    <string name="author_title">Author: </string>
+    <string name="review_title">Review: </string>
+    <string name="plot_title">Plot: </string>
+    <string name="movie_reviews_title">Movie Reviews: </string>
 
 
     <string-array name="pref_category_array">

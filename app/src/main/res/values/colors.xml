@@ -6,4 +6,5 @@
     <color name="colorTextWhite">#FFFF</color>
     <color name="colorTransparentBlack">#80000000</color>
     <color name="colorTransparentWhite">#80FFFFFF</color>
+    <color name="lightGrey">#D3D3D3</color>
 </resources>
