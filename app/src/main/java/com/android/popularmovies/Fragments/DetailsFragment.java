@@ -1,23 +1,35 @@
-package com.android.popularmovies;
+package com.android.popularmovies.Fragments;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +38,8 @@ import com.android.popularmovies.Adapters.VideoAdapter;
 import com.android.popularmovies.Models.Constants;
 import com.android.popularmovies.Models.FavoriteMovie;
 import com.android.popularmovies.Models.Model;
+import com.android.popularmovies.R;
+import com.android.popularmovies.Utils.OnSwipeTouchListener;
 import com.orm.query.Condition;
 import com.orm.query.Select;
 import com.squareup.picasso.Picasso;
@@ -50,12 +64,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
- * Created by sagar_000 on 9/4/2016.
+ * Created by sagar_000 on 9/22/2016.
  */
-public class DetailActivity extends BaseActivity {
+public class DetailsFragment extends Fragment {
 
-
-    private final String LOG_TAG = DetailActivity.class.getSimpleName();
+    public static final String LOG_TAG = DetailsFragment.class.getSimpleName();
 
     private static String[] PERMISSIONS_STORAGE = {Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE};
@@ -86,7 +99,10 @@ public class DetailActivity extends BaseActivity {
     ImageButton favorite_button;
     @BindView(R.id.rating_bar_detail)
     RatingBar ratingBar;
+    @BindView(R.id.fragment_scrollView)
+    ScrollView scrollView;
 
+    View rootView;
     double ratings = 0;
     Context context;
     File mediaStorageDir;
@@ -96,29 +112,58 @@ public class DetailActivity extends BaseActivity {
 
     String movieTitle, moviePlot, movieRelease, movieId;
 
+    public DetailsFragment(){}
+
+    public static Fragment newInstance(String title, String poster, String plot, double ratings, String release, String id) {
+        DetailsFragment fragment = new DetailsFragment();
+        Bundle args = new Bundle();
+        args.putString("title", title);
+        args.putString("poster",poster);
+        args.putString("plot", plot);
+        args.putDouble("rating", ratings);
+        args.putString("release",release);
+        args.putString("id",id);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail);
-        ButterKnife.bind(this);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstance){
+
+        rootView = inflater.inflate(R.layout.fragment_details, null);
+
+        ButterKnife.bind(this,rootView);
         ratingBar.setEnabled(false);
-        movieTitle = getIntent().getStringExtra("title");
-        moviePlot = getIntent().getStringExtra("plot");
-        movieRelease = getIntent().getStringExtra("release");
-        movieId = getIntent().getStringExtra("id");
+        Bundle bundle = this.getArguments();
+        movieTitle = bundle.getString("title");
+        moviePlot = bundle.getString("plot");
+        movieRelease = bundle.getString("release");
+        movieId = bundle.getString("id");
         title.setText(movieTitle);
-        Picasso.with(this).load(getIntent().getStringExtra("poster")).into(poster);
+        Picasso.with(getActivity()).load(bundle.getString("poster")).into(poster);
         plot.setText(moviePlot);
         release.setText(movieRelease);
         setFavoriteButtonToggle();
-        ratingBar.setRating((float) getIntent().getDoubleExtra("rating",ratings));
-        SugarRatings = getIntent().getDoubleExtra("rating",ratings);
+        ratingBar.setRating((float) bundle.getDouble("rating",ratings));
+        SugarRatings = bundle.getDouble("rating",ratings);
 
+        scrollView.setOnTouchListener( new OnSwipeTouchListener(getActivity()){
+            public void onSwipeRight() {
+                FragmentManager fragmentManager = getFragmentManager();
+                android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
+                MoviesFragment moviesFragment = new MoviesFragment();
+                transaction.remove(DetailsFragment.this);
+                transaction.add(R.id.container, moviesFragment);
+                transaction.addToBackStack(null);
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
+                transaction.commit();
+            }
+        });
 
         favorite_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     requestStoragePermissions();
                 }
                 if (isExternalStorageAvailable()) {
@@ -136,7 +181,11 @@ public class DetailActivity extends BaseActivity {
             }
         });
 
+        setHasOptionsMenu(true);
+
+        return rootView;
     }
+
 
     public void onStart(){
         super.onStart();
@@ -148,13 +197,42 @@ public class DetailActivity extends BaseActivity {
     }
 
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+
+        inflater.inflate(R.menu.details_menu,menu);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_share){
+            int i = 0;
+            Intent share = new Intent(android.content.Intent.ACTION_SEND);
+            share.setType("text/plain");
+            share.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+
+            share.putExtra(Intent.EXTRA_SUBJECT, "Watch the Trailer of " + movieTitle);
+            share.putExtra(Intent.EXTRA_TEXT, moviePlot + "\r\n" + "\r\n" + Constants.YOUTUBE_LINK_CONSTRUCTOR + mVideoArrayList.get(i).getTrailer());
+
+            startActivity(Intent.createChooser(share, "Share link!"));
+            return true;
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
 
     private void AddFavorite() {
-        String moviePoster = getIntent().getStringExtra("poster");
-        final String imageName = getIntent().getStringExtra("poster");
+        Bundle bundle = this.getArguments();
+        final String imageName = bundle.getString("poster");
         int index = imageName.lastIndexOf("/");
         final String fileName = imageName.substring(index + 1);
-        Picasso.with(context).load(moviePoster).into(new Target() {
+        Picasso.with(context).load(imageName).into(new Target() {
             @Override
             public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
                 new Thread(new Runnable() {
@@ -162,26 +240,26 @@ public class DetailActivity extends BaseActivity {
                     @Override
                     public void run() {
 
-                            file = new File(mediaStorageDir.getAbsolutePath() + "/" + fileName);
-                            Log.d(LOG_TAG, String.valueOf(file));
-                            try {
-                                file.createNewFile();
-                                FileOutputStream saveStream = new FileOutputStream(file);
-                                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, saveStream);
-                                saveStream.flush();
-                                saveStream.close();
-                                saveToLocalDatabase(String.valueOf(file));
-                            } catch (IOException e) {
-                                Log.e("IOException", e.getLocalizedMessage());
-                            }
+                        file = new File(mediaStorageDir.getAbsolutePath() + "/" + fileName);
+                        Log.d(LOG_TAG, String.valueOf(file));
+                        try {
+                            file.createNewFile();
+                            FileOutputStream saveStream = new FileOutputStream(file);
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, saveStream);
+                            saveStream.flush();
+                            saveStream.close();
+                            saveToLocalDatabase(String.valueOf(file));
+                        } catch (IOException e) {
+                            Log.e("IOException", e.getLocalizedMessage());
                         }
+                    }
                 }).start();
-                }
+            }
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
 
-                Toast.makeText(getApplicationContext(),"Could not Added Movie to Favorite Movies", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),"Could not Added Movie to Favorite Movies", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -194,8 +272,7 @@ public class DetailActivity extends BaseActivity {
     }
 
     private void saveToLocalDatabase(String path){
-        FavoriteMovie favoriteMovie = new FavoriteMovie(movieTitle, moviePlot, movieRelease, SugarRatings, path);
-        favoriteMovie.setId(Long.getLong(movieId));
+        FavoriteMovie favoriteMovie = new FavoriteMovie(movieTitle, moviePlot, movieRelease, SugarRatings, path, movieId);
         favoriteMovie.save();
     }
 
@@ -211,18 +288,18 @@ public class DetailActivity extends BaseActivity {
 
     private void requestStoragePermissions() {
 
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
-                || ActivityCompat.shouldShowRequestPermissionRationale(this,
+                || ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
                 android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
 
-            Toast.makeText(this,"Please Accept the Permissions to Add Favorite Movies",Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(),"Please Accept the Permissions to Add Favorite Movies",Toast.LENGTH_LONG).show();
 
             ActivityCompat
-                    .requestPermissions(this, PERMISSIONS_STORAGE,
+                    .requestPermissions(getActivity(), PERMISSIONS_STORAGE,
                             REQUEST_STORAGE);
         } else {
-            ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_STORAGE);
+            ActivityCompat.requestPermissions(getActivity(), PERMISSIONS_STORAGE, REQUEST_STORAGE);
         }
     }
 
@@ -235,7 +312,7 @@ public class DetailActivity extends BaseActivity {
 
             // Check if the only required permission has been granted
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this,"Storage Permission Denied!",Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(),"Storage Permission Denied!",Toast.LENGTH_LONG).show();
             }
             else {
                 AddFavorite();
@@ -245,23 +322,30 @@ public class DetailActivity extends BaseActivity {
     }
 
     private void setFavoriteButtonToggle(){
-        List<FavoriteMovie> results = findFromSugar(Constants.SUGAR_WHERE_ID, movieId);
-        if(results.size() > 0){
-            favorite_button.setImageDrawable(getResources().getDrawable(R.mipmap.star_on));
+        try{
+            List<FavoriteMovie> results = findFromSugar(Constants.SUGAR_WHERE_ID, movieId);
+            if(results.size() > 0){
+                favorite_button.setImageDrawable(getResources().getDrawable(R.drawable.star_on));
+            }
+        }  catch (Exception e){
+            e.printStackTrace();
         }
     }
 
-    public boolean checkIfMovieFavoured(){
+    public void checkIfMovieFavoured(){
+        try {
             List<FavoriteMovie> results = findFromSugar(Constants.SUGAR_WHERE_ID, movieId);
-            if(results.size() > 0){
+             if(results.size() > 0){
                 favorite_button.setEnabled(false);
-                Toast.makeText(getApplicationContext(),"Already added to Favorite Movies!",Toast.LENGTH_SHORT).show();
-                return true;
+                Toast.makeText(getContext(),"Already added to Favorite Movies!",Toast.LENGTH_SHORT).show();
             }else {
                 AddFavorite();
-                favorite_button.setImageDrawable(getResources().getDrawable(R.mipmap.star_on));
-                return false;
+                favorite_button.setImageDrawable(getResources().getDrawable(R.drawable.star_on));
             }
+        } catch (Exception e){
+            AddFavorite();
+            favorite_button.setImageDrawable(getResources().getDrawable(R.drawable.star_on));
+        }
     }
 
     private static List<FavoriteMovie> findFromSugar(String whereClause, String movieId){
@@ -341,8 +425,8 @@ public class DetailActivity extends BaseActivity {
         @Override
         protected void onPostExecute(String[] result){
             if(result != null) {
-                VideoAdapter videoAdapter = new VideoAdapter(DetailActivity.this, mVideoArrayList);
-                GridView gridView = (GridView) findViewById(R.id.trailers_layout);
+                VideoAdapter videoAdapter = new VideoAdapter(getActivity(), mVideoArrayList);
+                GridView gridView = (GridView) rootView.findViewById(R.id.trailers_layout);
                 gridView.setAdapter(videoAdapter);
             }
         }
@@ -414,7 +498,7 @@ public class DetailActivity extends BaseActivity {
                 }
                 reviewJsonStr = buffer.toString();
             } catch (IOException e) {
-                Log.e("DetailActivity: ", "Error ", e);
+                Log.e("DetailFragment: ", "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
                 // to parse it.
                 return null;
@@ -426,7 +510,7 @@ public class DetailActivity extends BaseActivity {
                     try {
                         reader.close();
                     } catch (final IOException e) {
-                        Log.e("DetailActivity: ", "Error closing stream", e);
+                        Log.e("DetailFragment: ", "Error closing stream", e);
                     }
                 }
             }
@@ -445,8 +529,8 @@ public class DetailActivity extends BaseActivity {
         @Override
         protected void onPostExecute(String[] result){
             if(result != null) {
-                ReviewsAdapter reviewsAdapter = new ReviewsAdapter(DetailActivity.this, mReviewArrayList);
-                ListView listView = (ListView) findViewById(R.id.reviews_list);
+                ReviewsAdapter reviewsAdapter = new ReviewsAdapter(getActivity(), mReviewArrayList);
+                ListView listView = (ListView) rootView.findViewById(R.id.reviews_list);
                 listView.setAdapter(reviewsAdapter);
             }
         }

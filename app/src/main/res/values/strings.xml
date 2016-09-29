@@ -13,6 +13,8 @@
     <string name="review_title">Review: </string>
     <string name="plot_title">Plot: </string>
     <string name="movie_reviews_title">Movie Reviews: </string>
+    <string name="clear_list_title">Clear List</string>
+    <string name="share_title">Share</string>
 
 
     <string-array name="pref_category_array">

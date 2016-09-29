@@ -97,7 +97,7 @@
                         android:background="#00ffffff"
                         android:id="@+id/fav_favorite_button"
                         android:clickable="true"
-                        android:src="@mipmap/star_on"/>
+                        android:src="@drawable/star_on"/>
                 </LinearLayout>
 
 

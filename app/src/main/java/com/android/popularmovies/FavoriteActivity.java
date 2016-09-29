@@ -1,6 +1,7 @@
 package com.android.popularmovies;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.GridView;
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * Created by sagar_000 on 9/13/2016.
  */
-public class FavoriteActivity extends BaseActivity {
+public class FavoriteActivity extends AppCompatActivity {
 
 
     @Override
