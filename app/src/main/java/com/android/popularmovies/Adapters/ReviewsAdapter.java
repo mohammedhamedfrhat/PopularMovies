@@ -1,4 +1,4 @@
-package com.android.popularmovies.Adapters;
+package com.android.popularmovies.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.android.popularmovies.Models.Model;
+import com.android.popularmovies.models.Model;
 import com.android.popularmovies.R;
 
 import java.util.ArrayList;

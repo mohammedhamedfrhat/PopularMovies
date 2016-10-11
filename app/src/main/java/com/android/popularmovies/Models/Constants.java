@@ -1,4 +1,4 @@
-package com.android.popularmovies.Models;
+package com.android.popularmovies.models;
 
 /**
  * Created by sagar_000 on 9/5/2016.

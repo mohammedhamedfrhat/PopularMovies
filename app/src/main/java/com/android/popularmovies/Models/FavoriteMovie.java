@@ -1,4 +1,4 @@
-package com.android.popularmovies.Models;
+package com.android.popularmovies.models;
 
 import com.orm.SugarRecord;
 

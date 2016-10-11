@@ -1,4 +1,4 @@
-package com.android.popularmovies.Adapters;
+package com.android.popularmovies.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,8 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import com.android.popularmovies.Models.Constants;
-import com.android.popularmovies.Models.Model;
+import com.android.popularmovies.models.Constants;
+import com.android.popularmovies.models.Model;
 import com.android.popularmovies.R;
 import com.squareup.picasso.Picasso;
 
@@ -24,15 +24,15 @@ public class MovieAdapter extends BaseAdapter {
     LayoutInflater inflater;
     private List<Model> MovieArrayList = null;
     private ArrayList<Model> mArrayList;
-    boolean mUseLandscapeLayout;
     Callback mListener;
+    public static int position = 0;
 
     private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
 
 
     public interface Callback {
 
-        void onItemSelected(String title, String poster, String plot, double ratings, String release, String id);
+        void onItemSelected(String title, String poster, String plot, double ratings, String release, long id);
     }
 
 
@@ -67,7 +67,7 @@ public class MovieAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(final int i, View view, ViewGroup viewGroup) {
+    public View getView(final int i, View view, final ViewGroup viewGroup) {
         final ViewHolder holder;
         if (view == null) {
             holder = new ViewHolder();
@@ -85,27 +85,9 @@ public class MovieAdapter extends BaseAdapter {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.onItemSelected(MovieArrayList.get(i).getTitle(), Constants.IMAGE_URL + MovieArrayList.get(i).getImage(), MovieArrayList.get(i).getPlot(), MovieArrayList.get(i).getRating(), MovieArrayList.get(i).getRelease(), MovieArrayList.get(i).getId() );
-                /*Bundle args = new Bundle();
-                args.putString("title", MovieArrayList.get(i).getTitle());
-                args.putString("poster",Constants.IMAGE_URL + MovieArrayList.get(i).getImage());
-                args.putString("plot",MovieArrayList.get(i).getPlot());
-                args.putDouble("rating",MovieArrayList.get(i).getRating());
-                args.putString("release", MovieArrayList.get(i).getRelease());
-                args.putString("id",MovieArrayList.get(i).getId());
-                Fragment newFragment = new DetailsFragment();
-                newFragment.setArguments(args);
-                android.support.v4.app.FragmentTransaction transaction = ((FragmentActivity)context).getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.container, newFragment);
-                transaction.addToBackStack(null);
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                transaction.commit(); */
+                mListener.onItemSelected(MovieArrayList.get(i).getTitle(), Constants.IMAGE_URL + MovieArrayList.get(i).getImage(), MovieArrayList.get(i).getPlot(), MovieArrayList.get(i).getRating(), MovieArrayList.get(i).getRelease(), MovieArrayList.get(i).getId());
             }
         });
         return view;
-    }
-
-    public void setUseLandscapeLayout(boolean useLandscapeLayout) {
-        mUseLandscapeLayout = useLandscapeLayout;
     }
 }

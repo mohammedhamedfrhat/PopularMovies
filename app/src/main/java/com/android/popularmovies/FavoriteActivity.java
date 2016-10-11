@@ -6,8 +6,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.GridView;
 
-import com.android.popularmovies.Adapters.FavoriteMovieAdapter;
-import com.android.popularmovies.Models.FavoriteMovie;
+import com.android.popularmovies.adapters.FavoriteMovieAdapter;
+import com.android.popularmovies.models.FavoriteMovie;
 
 import java.util.List;
 

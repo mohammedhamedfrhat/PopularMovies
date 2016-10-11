@@ -1,4 +1,4 @@
-package com.android.popularmovies.Fragments;
+package com.android.popularmovies.fragments;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -11,11 +11,10 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,13 +32,12 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.popularmovies.Adapters.ReviewsAdapter;
-import com.android.popularmovies.Adapters.VideoAdapter;
-import com.android.popularmovies.Models.Constants;
-import com.android.popularmovies.Models.FavoriteMovie;
-import com.android.popularmovies.Models.Model;
 import com.android.popularmovies.R;
-import com.android.popularmovies.Utils.OnSwipeTouchListener;
+import com.android.popularmovies.adapters.ReviewsAdapter;
+import com.android.popularmovies.adapters.VideoAdapter;
+import com.android.popularmovies.models.Constants;
+import com.android.popularmovies.models.FavoriteMovie;
+import com.android.popularmovies.models.Model;
 import com.orm.query.Condition;
 import com.orm.query.Select;
 import com.squareup.picasso.Picasso;
@@ -110,11 +108,13 @@ public class DetailsFragment extends Fragment {
 
     double SugarRatings;
 
+    long id;
+
     String movieTitle, moviePlot, movieRelease, movieId;
 
     public DetailsFragment(){}
 
-    public static Fragment newInstance(String title, String poster, String plot, double ratings, String release, String id) {
+    public static Fragment newInstance(String title, String poster, String plot, double ratings, String release, long id) {
         DetailsFragment fragment = new DetailsFragment();
         Bundle args = new Bundle();
         args.putString("title", title);
@@ -122,7 +122,7 @@ public class DetailsFragment extends Fragment {
         args.putString("plot", plot);
         args.putDouble("rating", ratings);
         args.putString("release",release);
-        args.putString("id",id);
+        args.putLong("id",id);
         fragment.setArguments(args);
         return fragment;
     }
@@ -138,7 +138,7 @@ public class DetailsFragment extends Fragment {
         movieTitle = bundle.getString("title");
         moviePlot = bundle.getString("plot");
         movieRelease = bundle.getString("release");
-        movieId = bundle.getString("id");
+        movieId = String.valueOf(bundle.getLong("id", id));
         title.setText(movieTitle);
         Picasso.with(getActivity()).load(bundle.getString("poster")).into(poster);
         plot.setText(moviePlot);
@@ -146,19 +146,6 @@ public class DetailsFragment extends Fragment {
         setFavoriteButtonToggle();
         ratingBar.setRating((float) bundle.getDouble("rating",ratings));
         SugarRatings = bundle.getDouble("rating",ratings);
-
-        scrollView.setOnTouchListener( new OnSwipeTouchListener(getActivity()){
-            public void onSwipeRight() {
-                FragmentManager fragmentManager = getFragmentManager();
-                android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
-                MoviesFragment moviesFragment = new MoviesFragment();
-                transaction.remove(DetailsFragment.this);
-                transaction.add(R.id.container, moviesFragment);
-                transaction.addToBackStack(null);
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
-                transaction.commit();
-            }
-        });
 
         favorite_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -230,6 +217,7 @@ public class DetailsFragment extends Fragment {
     private void AddFavorite() {
         Bundle bundle = this.getArguments();
         final String imageName = bundle.getString("poster");
+        assert imageName != null;
         int index = imageName.lastIndexOf("/");
         final String fileName = imageName.substring(index + 1);
         Picasso.with(context).load(imageName).into(new Target() {
@@ -449,7 +437,7 @@ public class DetailsFragment extends Fragment {
 
             JSONObject poster = movieArray.getJSONObject(i);
 
-            Model model = new Model();
+            Model model = new Model(Parcel.obtain());
             model.setTrailer(poster.getString(TRAILER_KEY));
 
             mVideoArrayList.add(model);
@@ -553,7 +541,7 @@ public class DetailsFragment extends Fragment {
 
             JSONObject poster = movieArray.getJSONObject(i);
 
-            Model model = new Model();
+            Model model = new Model(Parcel.obtain());
             model.setAuthor(poster.getString(AUTHOR_KEY));
             model.setReview(poster.getString(REVIEW_KEY));
 

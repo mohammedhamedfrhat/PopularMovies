@@ -1,4 +1,4 @@
-package com.android.popularmovies.Adapters;
+package com.android.popularmovies.adapters;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -10,8 +10,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import com.android.popularmovies.Models.Constants;
-import com.android.popularmovies.Models.Model;
+import com.android.popularmovies.models.Constants;
+import com.android.popularmovies.models.Model;
 import com.android.popularmovies.R;
 import com.squareup.picasso.Picasso;
 

@@ -1,4 +1,4 @@
-package com.android.popularmovies.Adapters;
+package com.android.popularmovies.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
 import com.android.popularmovies.FavoriteDetailActivity;
-import com.android.popularmovies.Models.FavoriteMovie;
+import com.android.popularmovies.models.FavoriteMovie;
 import com.android.popularmovies.R;
 import com.squareup.picasso.Picasso;
 
