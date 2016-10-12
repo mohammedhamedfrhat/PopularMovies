@@ -1,6 +1,7 @@
 package com.android.popularmovies.fragments;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -31,7 +32,6 @@ public class MoviesFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         updateMovies();
-        setRetainInstance(true);
     }
 
     @Override
@@ -50,6 +50,18 @@ public class MoviesFragment extends Fragment {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         MovieTask.mProgressDialog.onSaveInstanceState();
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        if (gridView != null){
+            SharedPreferences preferences = getActivity().getSharedPreferences("SCROLL", 0);
+            SharedPreferences.Editor editor = preferences.edit();
+            int scroll = gridView.getFirstVisiblePosition();
+            editor.putInt("ScrollValue", scroll);
+            editor.apply();
+        }
     }
 
     @Override

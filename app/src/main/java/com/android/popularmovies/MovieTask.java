@@ -46,6 +46,7 @@ public class MovieTask extends AsyncTask<String, Void, String[]> {
     BufferedReader reader = null;
     String movieJsonStr = null;
 
+
     public MovieTask(Context context ) {
         mContext = context;
     }
@@ -106,8 +107,6 @@ public class MovieTask extends AsyncTask<String, Void, String[]> {
             movieJsonStr = buffer.toString();
         } catch (IOException e) {
             Log.e("PlaceholderFragment", "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attemping
-            // to parse it.
             return null;
         } finally {
             if (urlConnection != null) {
@@ -163,6 +162,9 @@ public class MovieTask extends AsyncTask<String, Void, String[]> {
                 });
                 MoviesFragment.gridView = (GridView) MoviesFragment.rootView.findViewById(R.id.grid_view);
                 MoviesFragment.gridView.setAdapter(movieAdapter);
+                SharedPreferences preferences = mContext.getSharedPreferences("SCROLL", 0);
+                int scroll = preferences.getInt("ScrollValue", 0);
+                MoviesFragment.gridView.smoothScrollToPosition(scroll);
             } else {
                 Toast.makeText(mContext,"Please Enable Internet Services",Toast.LENGTH_SHORT).show();
             }
